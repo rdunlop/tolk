@@ -1,0 +1,4 @@
+en:
+  views:
+    index:
+      title: Welcome to Rails

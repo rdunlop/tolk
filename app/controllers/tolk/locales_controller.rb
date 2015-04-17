@@ -44,7 +44,11 @@ module Tolk
     end
 
     def dump_all
-      Tolk::Locale.dump_all
+      if Tolk::Config.dump_to_files
+        Tolk::Locale.dump_all_to_files
+      else
+        Tolk::Locale.dump_all
+      end
       I18n.reload!
       redirect_to request.referrer
     end

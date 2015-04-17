@@ -57,6 +57,15 @@ module Tolk
         secondary_locales.each { |locale| locale.dump(*args) }
       end
 
+      def dump_all_to_files(search_path = self.locales_config_path)
+        hash = {}
+        all.each do |locale|
+          other_locale_translations = locale.to_hash[locale.name]
+          hash[locale.name] = other_locale_translations if other_locale_translations.any?
+        end
+        Tolk::ExportToFiles.dump(data: hash, destination: search_path)
+      end
+
       def dump_yaml(name, *args)
         where(name: name).first.dump(*args)
       end

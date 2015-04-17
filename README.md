@@ -54,6 +54,14 @@ If you already have data in your non primary locale files, you will need to impo
 Upon visiting http://your_app.com/tolk - you will be presented with different options like creating new locale or providing translations for the existing locales.
 
 
+If you ONLY want to sync the files which are in your /config/locales files, and do not want Tolk to handle any of the translations from gems or other sources,
+
+```bash
+  $ rake tolk:sync_from_disk
+```
+
+This will import all of the translations found in yml files in your /config/locales directory, and will NOT include translations from gems (unless those files are in this directory).
+
 ### Saving locales to files
 
 
@@ -80,6 +88,13 @@ You can use the dump_all method defined in `Tolk::Locale` directly and pass dire
 ```
 
 You can even download the yml file using Tolk web interface by appending `.yaml` to the locale url. E.g `http://your_app.com/tolk/locales/de.yaml`
+
+```bash
+  $ rake tolk:dump_all_to_files
+```
+
+This will read all of your existing locale files, and write matching locale files for other languages.
+Example: `/locales/views/index.en.yml` will be read, and all translations in that file will be output in `/locales/views/index.fr.yml` and `/locales/views/index.de.yml`
 
 ### Translation statistics
 

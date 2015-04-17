@@ -91,6 +91,23 @@ class LocaleTest < ActiveSupport::TestCase
     end
   end
 
+  test "dumping locales to separate yml files" do
+    Tolk::Locale.primary_locale_name = 'en'
+    Tolk::Locale.primary_locale(true)
+    temp_dir = Rails.root.join("../../tmp/locales")
+    begin
+      FileUtils.mkdir_p(temp_dir)
+      FileUtils.cp(Rails.root.join("../locales/import/en.yml"), temp_dir.join("basic.en.yml"))
+
+      Tolk::Locale.dump_all_to_files(temp_dir)
+
+      assert File.exists?(temp_dir.join("basic.da.yml")), "DA translation not found"
+      assert File.exists?(temp_dir.join("basic.se.yml")), "SE translation not found"
+    ensure
+      FileUtils.rm_rf(temp_dir)
+    end
+  end
+
   test "human language name" do
     assert_equal 'English', tolk_locales(:en).language_name
     assert_equal 'pirate', Tolk::Locale.new(:name => 'pirate').language_name

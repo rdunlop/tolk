@@ -19,9 +19,19 @@ namespace :tolk do
     Tolk::Locale.sync!
   end
 
+  desc "Sync Tolk with the locale files on disk"
+  task :sync_from_disk => :environment do
+    Tolk::Locale.sync!
+  end
+
   desc "Generate yml files for all the locales defined in Tolk"
   task :dump_all => :environment do
     Tolk::Locale.dump_all
+  end
+
+  desc "Write new yml files, adding new files for other languagess"
+  task :dump_all_to_files => :environment do
+    Tolk::Locale.dump_all_to_files
   end
 
   desc "Generate a single yml file for a specific locale"

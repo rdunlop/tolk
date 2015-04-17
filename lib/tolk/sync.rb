@@ -9,6 +9,54 @@ module Tolk
         sync_phrases(load_translations)
       end
 
+      def sync_from_disk!
+        load_translations_from_disk
+      end
+
+      def load_translations_from_disk
+        translations_files = Dir[self.locales_config_path.join("**", "*.{rb,yml}")]
+        translations_files.each do |translation_file|
+          translations = Tolk::YAML.load_file(translation_file)
+          languages = translations.keys
+
+          locale_name = "Robin FAKE"
+          count = 0
+
+          languages.each do |language|
+            phrases = Tolk::Phrase.all
+            locale = Tolk::Locale.where(name: language).first_or_create
+            language_data = flat_hash(translations[language])
+
+            language_data.each do |key, value|
+              phrase = phrases.detect {|p| p.key == key}
+
+              if phrase
+                translation = locale.translations.new(:text => value, :phrase => phrase)
+                if translation.save
+                  count = count + 1
+                elsif translation.errors[:variables].present?
+                  puts "[WARN] Key '#{key}' from '#{locale_name}.yml' could not be saved: #{translation.errors[:variables].first}"
+                end
+              else
+                if Tolk::Locale.primary_locale_name == language
+                  phrase = Tolk::Phrase.create!(:key => key)
+                  translation = locale.translations.new(:text => value, :phrase => phrase)
+                  if translation.save
+                    count = count + 1
+                  elsif translation.errors[:variables].present?
+                    puts "[WARN] Key '#{key}' from '#{locale_name}.yml' could not be saved: #{translation.errors[:variables].first}"
+                  end
+                else
+                  puts "[ERROR] Key '#{key}' was found in '#{locale_name}.yml' but #{Tolk::Locale.primary_language_name} translation is missing"
+                end
+              end
+            end
+          end
+          puts "[INFO] Imported #{count} keys from #{translation_file}"
+        end
+        #translations_files = filter_blocked_files(translation_files)
+      end
+
       def load_translations
         if Tolk.config.exclude_gems_token
           # bypass default init_translations

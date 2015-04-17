@@ -4,6 +4,7 @@ require 'tolk/engine'
 require 'tolk/sync'
 require 'tolk/import'
 require 'tolk/export'
+require 'tolk/export_to_files'
 require 'tolk/pagination'
 require 'tolk/yaml'
 
