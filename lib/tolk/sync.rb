@@ -19,7 +19,6 @@ module Tolk
           translations = Tolk::YAML.load_file(translation_file)
           languages = translations.keys
 
-          locale_name = "Robin FAKE"
           count = 0
 
           languages.each do |language|
@@ -30,25 +29,15 @@ module Tolk
             language_data.each do |key, value|
               phrase = phrases.detect {|p| p.key == key}
 
-              if phrase
-                translation = locale.translations.new(:text => value, :phrase => phrase)
-                if translation.save
-                  count = count + 1
-                elsif translation.errors[:variables].present?
-                  puts "[WARN] Key '#{key}' from '#{locale_name}.yml' could not be saved: #{translation.errors[:variables].first}"
-                end
-              else
-                if Tolk::Locale.primary_locale_name == language
-                  phrase = Tolk::Phrase.create!(:key => key)
-                  translation = locale.translations.new(:text => value, :phrase => phrase)
-                  if translation.save
-                    count = count + 1
-                  elsif translation.errors[:variables].present?
-                    puts "[WARN] Key '#{key}' from '#{locale_name}.yml' could not be saved: #{translation.errors[:variables].first}"
-                  end
-                else
-                  puts "[ERROR] Key '#{key}' was found in '#{locale_name}.yml' but #{Tolk::Locale.primary_language_name} translation is missing"
-                end
+              if phrase.nil?
+                phrase = Tolk::Phrase.create!(:key => key)
+              end
+
+              translation = locale.translations.new(:text => value, :phrase => phrase)
+              if translation.save
+                count = count + 1
+              elsif translation.errors[:variables].present?
+                puts "[WARN] Key '#{key}' from '#{translation_file}' could not be saved: #{translation.errors[:variables].first}"
               end
             end
           end
