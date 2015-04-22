@@ -6,44 +6,40 @@ module Tolk
 
     module ClassMethods
       def sync!
-        sync_phrases(load_translations)
+        sync_phrases(load_translations, primary_locale)
       end
 
       def sync_from_disk!
-        load_translations_from_disk
+        languages_and_translations = load_translations_from_disk
+        sync_from_disk(languages_and_translations, primary_locale_name)
       end
 
+      def sync_from_disk(languages_and_translations, primary_locale_name)
+        primary_locale = Tolk::Locale.where(name: self.primary_locale_name).first_or_create
+        sync_phrases(languages_and_translations[primary_locale_name], primary_locale)
+
+        (languages_and_translations.keys - [primary_locale]).each do |secondary_locale|
+          self.import_locale_data(secondary_locale, languages_and_translations[secondary_locale])
+        end
+      end
+
+      # Load translations from multiple disk files, and return the resulting super-hash
+      #
+      # Returns: { "en" => { "key" => "value", "key2" => "value"},
+      #            "fr" => { "key" => "valu" , "key2" => "valu2"}}
       def load_translations_from_disk
         translations_files = Dir[self.locales_config_path.join("**", "*.{rb,yml}")]
+        all_language_translations = {}
         translations_files.each do |translation_file|
           translations = Tolk::YAML.load_file(translation_file)
-          languages = translations.keys
-
-          count = 0
-
-          languages.each do |language|
-            phrases = Tolk::Phrase.all
-            locale = Tolk::Locale.where(name: language).first_or_create
-            language_data = flat_hash(translations[language])
-
-            language_data.each do |key, value|
-              phrase = phrases.detect {|p| p.key == key}
-
-              if phrase.nil?
-                phrase = Tolk::Phrase.create!(:key => key)
-              end
-
-              translation = locale.translations.new(:text => value, :phrase => phrase)
-              if translation.save
-                count = count + 1
-              elsif translation.errors[:variables].present?
-                puts "[WARN] Key '#{key}' from '#{translation_file}' could not be saved: #{translation.errors[:variables].first}"
-              end
-            end
-          end
-          puts "[INFO] Imported #{count} keys from #{translation_file}"
+          all_language_translations.merge!(translations)
         end
-        #translations_files = filter_blocked_files(translation_files)
+
+        result = {}
+        all_language_translations.keys.each do |language|
+          result[language] = flat_hash(all_language_translations[language])
+        end
+        result
       end
 
       def load_translations
@@ -95,9 +91,7 @@ module Tolk
 
       private
 
-      def sync_phrases(translations)
-        primary_locale = self.primary_locale
-
+      def sync_phrases(translations, primary_locale)
         # Handle deleted phrases
         translations.present? ? Tolk::Phrase.destroy_all(["tolk_phrases.key NOT IN (?)", translations.keys]) : Tolk::Phrase.destroy_all
 

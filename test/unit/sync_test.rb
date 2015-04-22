@@ -1,6 +1,11 @@
 require 'test_helper'
 require 'fileutils'
 
+class SyncTester
+  include Tolk::Sync
+  include Tolk::Import
+end
+
 class SyncTest < ActiveSupport::TestCase
   def setup
     Tolk::Locale.delete_all
@@ -26,16 +31,83 @@ class SyncTest < ActiveSupport::TestCase
   end
 
   def test_sync_sets_previous_text_for_primary_locale
-    Tolk::Locale.expects(:load_translations).returns({"hello_world" => "Hello World"}).at_least_once
-    Tolk::Locale.sync!
+    SyncTester.expects(:load_translations).returns({"hello_world" => "Hello World"}).at_least_once
+    en = Tolk::Locale.find_by(:name => 'en')
+    SyncTester.expects(:primary_locale).returns(en).at_least_once
+    #SyncTester.expects(:locales_config_path).returns(Rails.root.join("../locales/sync/")).at_least_once
+    #SyncTester.expects(:primary_locale_name).returns("English").at_least_once
+    SyncTester.sync!
+    #Tolk::Locale.sync!
 
     # Change 'Hello World' to 'Hello Super World'
-    Tolk::Locale.expects(:load_translations).returns({"hello_world" => "Hello Super World"}).at_least_once
-    Tolk::Locale.sync!
+    SyncTester.expects(:load_translations).returns({"hello_world" => "Hello Super World"}).at_least_once
+    SyncTester.sync!
 
     translation = Tolk::Locale.primary_locale(true).translations.first
     assert_equal 'Hello Super World', translation.text
     assert_equal 'Hello World', translation.previous_text
+  end
+
+  def test_sync_from_disk
+    SyncTester.expects(:locales_config_path).returns(Rails.root.join("../locales/import/views/")).at_least_once
+    primary_locale = Tolk::Locale.find_by(:name => 'en')
+    SyncTester.expects(:primary_locale_name).returns("en").at_least_once
+    SyncTester.sync_from_disk!
+
+    phrase = Tolk::Phrase.first
+    assert_equal 'Welcome to Rails', phrase.translations.where(locale: primary_locale).first.text
+    assert_equal 'Bienvenue a Rails',       phrase.translations.where.not(locale: primary_locale).first.text
+  end
+
+  def test_sync_from_disk_direct
+    hash = { "en" => {"views.index.title"=>"Welcome to Rails"}, "fr" => {"views.index.title"=>"Bienvenue a Rails"}}
+    SyncTester.expects(:primary_locale_name).returns("en").at_least_once
+    SyncTester.sync_from_disk(hash, "en")
+
+    primary_locale = Tolk::Locale.find_by(:name => 'en')
+    phrase = Tolk::Phrase.first
+    assert_equal 'Welcome to Rails', phrase.translations.where(locale: primary_locale).first.text
+    assert_equal 'Bienvenue a Rails',       phrase.translations.where.not(locale: primary_locale).first.text
+
+    updated_hash = { "en" => {"views.index.title"=>"Welcome to New Rails"}, "fr" => {"views.index.title"=>"Bienvenue a Rails"}}
+    SyncTester.sync_from_disk(updated_hash, "en")
+
+    phrase = Tolk::Phrase.first
+    english_translation = phrase.translations.where(locale: primary_locale).first
+    french_translation = phrase.translations.where.not(locale: primary_locale).first
+    assert_equal "Welcome to New Rails", english_translation.text
+    assert_equal true, french_translation.primary_updated
+  end
+
+  def test_sync_with_changes
+    hash = { "en" => {"views.index.title"=>"Welcome to Rails"}, "fr" => {"views.index.title"=>"Bienvenue a Rails"}}
+    SyncTester.expects(:primary_locale_name).returns("en").at_least_once
+    SyncTester.sync_from_disk(hash, "en")
+
+    primary_locale = Tolk::Locale.find_by(:name => 'en')
+    phrase = Tolk::Phrase.first
+    english_translation = phrase.translations.where(locale: primary_locale).first
+    french_translation = phrase.translations.where.not(locale: primary_locale).first
+
+    french_translation.text = "Updated Bienvenue"
+    french_translation.save!
+
+    updated_hash = { "en" => {"views.index.title"=>"Welcome to New Rails"}, "fr" => {"views.index.title"=>"Bienvenue a Rails"}}
+    SyncTester.sync_from_disk(updated_hash, "en")
+
+    phrase = Tolk::Phrase.first
+    english_translation = phrase.translations.where(locale: primary_locale).first
+    french_translation = phrase.translations.where.not(locale: primary_locale).first
+
+    assert_equal "Bienvenue a Rails", french_translation.text
+  end
+
+  def test_load_from_disk
+    SyncTester.expects(:locales_config_path).returns(Rails.root.join("../locales/import/views/")).at_least_once
+    translations = SyncTester.load_translations_from_disk
+
+    assert_equal 2, translations.count
+    assert_equal({"en"=>{"views.index.title"=>"Welcome to Rails"}, "fr"=>{"views.index.title"=>"Bienvenue a Rails"}}, translations)
   end
 
   def test_sync_sets_primary_updated_for_secondary_translations_on_update

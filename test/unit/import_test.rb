@@ -22,11 +22,4 @@ class ImportTest < ActiveSupport::TestCase
 
     assert_equal 0, Tolk::Phrase.where(key: 'gem_hello_world').count
   end
-
-  test "loads only locales from disk" do
-    Tolk::Locale.sync_from_disk!
-    assert_equal 1, Tolk::Phrase.where(key: 'views.index.title').count
-    phrase = Tolk::Phrase.where(key: 'views.index.title').first
-    assert_equal 2, phrase.translations.count
-  end
 end
