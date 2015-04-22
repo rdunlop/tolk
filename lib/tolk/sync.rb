@@ -32,7 +32,7 @@ module Tolk
         all_language_translations = {}
         translations_files.each do |translation_file|
           translations = Tolk::YAML.load_file(translation_file)
-          all_language_translations.merge!(translations)
+          all_language_translations.deep_merge!(translations)
         end
 
         result = {}
