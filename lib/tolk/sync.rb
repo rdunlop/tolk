@@ -18,7 +18,7 @@ module Tolk
         primary_locale = Tolk::Locale.where(name: self.primary_locale_name).first_or_create
         sync_phrases(languages_and_translations[primary_locale_name], primary_locale)
 
-        (languages_and_translations.keys - [primary_locale]).each do |secondary_locale|
+        (languages_and_translations.keys - [primary_locale_name]).each do |secondary_locale|
           self.import_locale_data(secondary_locale, languages_and_translations[secondary_locale])
         end
       end
