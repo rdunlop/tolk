@@ -96,6 +96,31 @@ You can even download the yml file using Tolk web interface by appending `.yaml`
 This will read all of your existing locale files, and write matching locale files for other languages.
 Example: `/locales/views/index.en.yml` will be read, and all translations in that file will be output in `/locales/views/index.fr.yml` and `/locales/views/index.de.yml`
 
+### Settings
+
+You can add some settings in the initializer file
+
+```ruby
+# config/initializers/tolk.rb
+Tolk.config do |config|
+  config.exclude_gems_token = true
+  # exclude locales tokens from gems.
+
+  config.block_xxx_en_yml_locale_files = true
+  # reject files of type xxx.en.yml when syncing locales.
+
+  config.dump_path = '/new/path'
+  # Dump locale path by default the locales folder (config/locales).
+
+  config.mapping['en'] = 'New English'
+  config.mapping['fr'] = 'New French'
+  # Mapping : a hash of the type { 'ar' => 'Arabic' }.
+
+  config.primary_locale_name = 'de'
+  # primary locale to not be overriden by default locale in development mode.
+end
+```
+
 ### Translation statistics
 
 You can ask statistics about missing or updated translations to be tracked for third party tools in `http://your_app.com/tolk/stats.json` endpoint.

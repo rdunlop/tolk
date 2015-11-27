@@ -7,6 +7,7 @@ require 'tolk/export'
 require 'tolk/export_to_files'
 require 'tolk/pagination'
 require 'tolk/yaml'
+require 'tolk/pagination'
 
 module Tolk
   # Setup Tolk
