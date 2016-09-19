@@ -1,3 +1,7 @@
+* Tolk 2.0.0-pre
+ * Rails 5.0 support @dncre, @NomNomCameron
+ * Drop ruby 1.9.3
+
 * Tolk 1.9.3
  * Fix for a wrong order of requires (@wpp)
 
