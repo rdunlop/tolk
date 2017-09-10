@@ -1,5 +1,15 @@
+* Tolk 3.0.0
+ * All tests passes
+ * Remove support for ruby < 2.2.2
+ * Remove support for ruby < 5.0
+ # Rails 5.1 compatibility
+
+
+* Tolk 2.0.0
+ * Release
+
 * Tolk 2.0.0-pre
- * Rails 5.0 support @dncre, @NomNomCameron
+ * Rails 5.0 support @dnrce, @NomNomCameron
  * Drop ruby 1.9.3
 
 * Tolk 1.9.3

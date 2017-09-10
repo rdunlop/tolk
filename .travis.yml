@@ -9,18 +9,18 @@ before_script:
   - bundle exec rake db:setup
 
 rvm:
-  - 2.0.0
-  - 2.1
-  - 2.2
-  - 2.3
-  - 2.4
+  - 2.2.2
+  - 2.4.0
 
 env:
-  - RAILS_VERSION="~> 4.0.0"
-  - RAILS_VERSION="~> 4.1.0"
-  - RAILS_VERSION="~> 4.2.0"
+  - RAILS_VERSION="~> 5.0.0"
+  - RAILS_VERSION="~> 5.1.0"
 
 matrix:
-  include:
-    - rvm: 2.2.4
+  exclude:
+    - rvm: 2.0.0
       env: RAILS_VERSION="~> 5.0.0"
+    - rvm: 2.1.9
+      env: RAILS_VERSION="~> 5.0.0"
+  allow_failures:
+    - rvm: ruby-head

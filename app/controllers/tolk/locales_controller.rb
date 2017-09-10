@@ -50,6 +50,7 @@ module Tolk
         Tolk::Locale.dump_all
       end
       I18n.reload!
+      I18n::JS.export if defined? I18n::JS
       redirect_to request.referrer
     end
 

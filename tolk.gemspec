@@ -17,19 +17,19 @@ Gem::Specification.new do |s|
   s.platform = Gem::Platform::RUBY
 
 
-  s.required_ruby_version = '>= 2.0.0'
+  s.required_ruby_version = '>= 2.2.2'
 
-  s.add_runtime_dependency 'rails', '>= 4.0', '< 5.1'
+  s.add_runtime_dependency 'rails', '>= 5.0'
   s.add_runtime_dependency 'safe_yaml', ">= 0.8.6"
 
-  s.add_development_dependency 'capybara', '~> 2.4.4'
+  s.add_development_dependency 'capybara', '~> 2.14'
   s.add_development_dependency 'sqlite3'
   s.add_development_dependency 'mocha', '>= 1.0'
-  s.add_development_dependency 'selenium-webdriver'
+  s.add_development_dependency 'poltergeist'
   s.add_development_dependency 'will_paginate'
 
 
-  if File.exists?('UPGRADING')
+  if File.exist?('UPGRADING')
     s.post_install_message = File.read("UPGRADING")
   end
 

@@ -68,7 +68,7 @@ module Tolk
 
       def read_primary_locale_file
         primary_file = "#{self.locales_config_path}/#{self.primary_locale_name}.yml"
-        if File.exists?(primary_file)
+        if File.exist?(primary_file)
           flat_hash(Tolk::YAML.load_file(primary_file)[self.primary_locale_name])
         else
           {}
@@ -93,7 +93,7 @@ module Tolk
 
       def sync_phrases(translations, primary_locale)
         # Handle deleted phrases
-        translations.present? ? Tolk::Phrase.destroy_all(["tolk_phrases.key NOT IN (?)", translations.keys]) : Tolk::Phrase.destroy_all
+        translations.present? ? Tolk::Phrase.where(["tolk_phrases.key NOT IN (?)", translations.keys]).destroy_all : Tolk::Phrase.destroy_all
 
         phrases = Tolk::Phrase.all
 
